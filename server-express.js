@@ -59,7 +59,9 @@ function getAdminPin() {
 }
 
 function isValidToken(token) {
-  return token && adminSession.token && token === adminSession.token;
+  if (!token) return false;
+  const payload = verifySessionToken(token);
+  return payload && payload.role === 'admin';
 }
 
 function getAuthToken(req) {
@@ -702,15 +704,13 @@ app.post('/api/admin/login', (req, res) => {
   if (!pin || pin !== correctPin) {
     return res.status(401).json({ success: false, error: 'Incorrect PIN' });
   }
-  const token = generateToken();
-  adminSession = { token, loginAt: new Date().toISOString() };
-  console.log(`[Admin] New session started at ${adminSession.loginAt}`);
+  const token = generateSessionToken({ role: 'admin' });
+  console.log(`[Admin] New JWT session started at ${new Date().toISOString()}`);
   res.json({ success: true, token });
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  adminSession = { token: null, loginAt: null };
-  console.log('[Admin] Session cleared');
+  console.log('[Admin] Session logout');
   res.json({ success: true });
 });
 
@@ -729,6 +729,43 @@ app.post('/api/admin/pin', requireAdmin, (req, res) => {
   }
   writeJson(adminConfigFile, { pin: newPin });
   res.json({ success: true });
+});
+
+// Admin restore data endpoint (to sync localStorage data back to server after restart)
+app.post('/api/admin/restore-data', requireAdmin, (req, res) => {
+  const { type, data } = req.body;
+  if (!type || !Array.isArray(data)) {
+    return res.status(400).json({ success: false, error: 'Invalid restore payload.' });
+  }
+
+  let filePath;
+  switch (type) {
+    case 'submissions':
+      filePath = submissionsFile;
+      break;
+    case 'staff':
+      filePath = staffFile;
+      break;
+    case 'attendance':
+      filePath = attendanceFile;
+      break;
+    case 'leaves':
+      filePath = leavesFile;
+      break;
+    case 'tasks':
+      filePath = tasksFile;
+      break;
+    case 'notifications':
+      filePath = notificationsFile;
+      break;
+    default:
+      return res.status(400).json({ success: false, error: 'Unknown data type.' });
+  }
+
+  // Restore the data to the JSON file
+  writeJson(filePath, data);
+  console.log(`[Admin] Restored ${data.length} records for ${type}`);
+  res.json({ success: true, count: data.length });
 });
 
 app.get('/api/submissions', (req, res) => {

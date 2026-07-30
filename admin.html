@@ -1517,10 +1517,40 @@
   function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
 
   // ── Data loading ──
+  async function restoreDataToServer(type, data) {
+    const token = localStorage.getItem('iitAdminToken') || '';
+    if (!token) return;
+    try {
+      await fetch('/api/admin/restore-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ type, data })
+      });
+    } catch(e) {
+      console.error('Failed to sync/restore data for ' + type, e);
+    }
+  }
+
   async function loadSubmissions() {
     try {
       const r = await fetch('/api/submissions');
-      if (r.ok) { const d = await r.json(); if (Array.isArray(d)) return d; }
+      if (r.ok) {
+        const d = await r.json();
+        if (Array.isArray(d)) {
+          if (d.length > 0) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+            return d;
+          } else {
+            const localData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            if (localData.length > 0) {
+              console.log('Server is empty, restoring submissions from localStorage...');
+              await restoreDataToServer('submissions', localData);
+              return localData;
+            }
+          }
+          return d;
+        }
+      }
     } catch(e) {}
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
   }
@@ -1854,7 +1884,23 @@
   async function loadStaff() {
     try {
       const r = await fetch('/api/staff');
-      if (r.ok) { const d = await r.json(); if (Array.isArray(d)) return d; }
+      if (r.ok) {
+        const d = await r.json();
+        if (Array.isArray(d)) {
+          if (d.length > 0) {
+            localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(d));
+            return d;
+          } else {
+            const localData = JSON.parse(localStorage.getItem(STAFF_STORAGE_KEY) || '[]');
+            if (localData.length > 0) {
+              console.log('Server is empty, restoring staff list from localStorage...');
+              await restoreDataToServer('staff', localData);
+              return localData;
+            }
+          }
+          return d;
+        }
+      }
     } catch(e) {}
     try { return JSON.parse(localStorage.getItem(STAFF_STORAGE_KEY) || '[]'); } catch { return []; }
   }
@@ -2320,6 +2366,18 @@
       const res = await fetch('/api/admin/attendance', { headers: { Authorization: 'Bearer ' + token } });
       if (res.ok) {
         allAttendanceLogs = await res.json();
+        if (Array.isArray(allAttendanceLogs)) {
+          if (allAttendanceLogs.length > 0) {
+            localStorage.setItem('iitAttendance', JSON.stringify(allAttendanceLogs));
+          } else {
+            const localData = JSON.parse(localStorage.getItem('iitAttendance') || '[]');
+            if (localData.length > 0) {
+              console.log('Server is empty, restoring attendance from localStorage...');
+              await restoreDataToServer('attendance', localData);
+              allAttendanceLogs = localData;
+            }
+          }
+        }
         renderAttendanceLogs();
       }
     } catch(e){}
@@ -2411,6 +2469,18 @@
       const res = await fetch('/api/admin/leaves', { headers: { Authorization: 'Bearer ' + token } });
       if (res.ok) {
         allLeavesRequests = await res.json();
+        if (Array.isArray(allLeavesRequests)) {
+          if (allLeavesRequests.length > 0) {
+            localStorage.setItem('iitLeaves', JSON.stringify(allLeavesRequests));
+          } else {
+            const localData = JSON.parse(localStorage.getItem('iitLeaves') || '[]');
+            if (localData.length > 0) {
+              console.log('Server is empty, restoring leaves from localStorage...');
+              await restoreDataToServer('leaves', localData);
+              allLeavesRequests = localData;
+            }
+          }
+        }
         renderLeavesRequests();
       }
     } catch(e){}
@@ -2506,6 +2576,18 @@
       const res = await fetch('/api/admin/tasks', { headers: { Authorization: 'Bearer ' + token } });
       if (res.ok) {
         allTasksLog = await res.json();
+        if (Array.isArray(allTasksLog)) {
+          if (allTasksLog.length > 0) {
+            localStorage.setItem('iitTasks', JSON.stringify(allTasksLog));
+          } else {
+            const localData = JSON.parse(localStorage.getItem('iitTasks') || '[]');
+            if (localData.length > 0) {
+              console.log('Server is empty, restoring tasks from localStorage...');
+              await restoreDataToServer('tasks', localData);
+              allTasksLog = localData;
+            }
+          }
+        }
         renderTasksList();
       }
     } catch(e){}
