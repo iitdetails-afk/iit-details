@@ -461,10 +461,10 @@ app.post('/api/staff/attendance', requireStaff, (req, res) => {
     return res.status(400).json({ success: false, error: 'Attendance already marked for today.' });
   }
 
-  // Calculate late arrivals (after 9:30 AM)
+  // Calculate late arrivals (after 10:00 AM)
   const now = new Date();
   const minutes = now.getHours() * 60 + now.getMinutes();
-  const isLate = minutes > (9 * 60 + 30); // Late if checked in after 09:30
+  const isLate = minutes > (10 * 60); // Late if checked in after 10:00 AM
 
   const record = {
     id: 'ATT-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
