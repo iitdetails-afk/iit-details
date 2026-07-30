@@ -53,8 +53,12 @@ function verifySessionToken(token) {
   }
 }
 
+function getAdminConfig() {
+  return readJson(adminConfigFile, { pin: '1234', officeStartTime: '10:00', officeEndTime: '18:30' });
+}
+
 function getAdminPin() {
-  const cfg = readJson(adminConfigFile, { pin: '1234' });
+  const cfg = getAdminConfig();
   return cfg.pin || '1234';
 }
 
@@ -461,10 +465,14 @@ app.post('/api/staff/attendance', requireStaff, (req, res) => {
     return res.status(400).json({ success: false, error: 'Attendance already marked for today.' });
   }
 
-  // Calculate late arrivals (after 10:00 AM)
+  // Calculate late arrivals dynamically based on admin configuration
+  const config = getAdminConfig();
+  const startTimeStr = config.officeStartTime || '10:00';
+  const [startHours, startMinutes] = startTimeStr.split(':').map(Number);
+
   const now = new Date();
   const minutes = now.getHours() * 60 + now.getMinutes();
-  const isLate = minutes > (10 * 60); // Late if checked in after 10:00 AM
+  const isLate = minutes > (startHours * 60 + startMinutes);
 
   const record = {
     id: 'ATT-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
@@ -825,6 +833,25 @@ app.post('/api/admin/notifications/read-all', requireAdmin, (req, res) => {
   });
   writeJson(notificationsFile, list);
   res.json({ success: true });
+});
+
+// Fetch admin config (Office Timings and details)
+app.get('/api/admin/config', requireAdmin, (req, res) => {
+  const config = getAdminConfig();
+  res.json(config);
+});
+
+// Update admin config
+app.post('/api/admin/config', requireAdmin, (req, res) => {
+  const { pin, officeStartTime, officeEndTime } = req.body;
+  const config = getAdminConfig();
+  
+  if (pin) config.pin = pin;
+  if (officeStartTime) config.officeStartTime = officeStartTime;
+  if (officeEndTime) config.officeEndTime = officeEndTime;
+  
+  writeJson(adminConfigFile, config);
+  res.json({ success: true, config });
 });
 
 app.post('/api/admin/login', (req, res) => {
