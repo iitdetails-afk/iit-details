@@ -205,6 +205,22 @@ app.post('/api/submit', (req, res) => {
   submissions.push(newPayload);
   writeJson(submissionsFile, submissions);
 
+  // Notify admin
+  try {
+    const notifications = readJson(notificationsFile, []);
+    notifications.push({
+      id: 'NTF-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      staffId: 'admin',
+      message: `New student application submitted by "${newPayload.name || 'Unnamed'}" (ID: ${newPayload.submissionId})`,
+      type: 'submission',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    writeJson(notificationsFile, notifications);
+  } catch (err) {
+    console.error('Failed to create admin notification for submission', err);
+  }
+
   res.json({ success: true, saved: newPayload });
 });
 
@@ -463,6 +479,27 @@ app.post('/api/staff/attendance', requireStaff, (req, res) => {
 
   attendanceLog.push(record);
   writeJson(attendanceFile, attendanceLog);
+
+  // Notify admin
+  try {
+    const staffList = readJson(staffFile, []);
+    const staff = staffList.find(s => s.staffId === req.staffId) || {};
+    const staffName = staff.name || req.staffId;
+
+    const notifications = readJson(notificationsFile, []);
+    notifications.push({
+      id: 'NTF-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      staffId: 'admin',
+      message: `${staffName} marked attendance at ${now.toLocaleTimeString('en-IN')}${isLate ? ' (Late arrival)' : ''}.`,
+      type: 'attendance',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    writeJson(notificationsFile, notifications);
+  } catch (err) {
+    console.error('Failed to create admin notification for attendance', err);
+  }
+
   res.json({ success: true, record });
 });
 
@@ -509,6 +546,27 @@ app.post('/api/staff/leave', requireStaff, (req, res) => {
 
   leaves.push(newRequest);
   writeJson(leavesFile, leaves);
+
+  // Notify admin
+  try {
+    const staffList = readJson(staffFile, []);
+    const staff = staffList.find(s => s.staffId === req.staffId) || {};
+    const staffName = staff.name || req.staffId;
+
+    const notifications = readJson(notificationsFile, []);
+    notifications.push({
+      id: 'NTF-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      staffId: 'admin',
+      message: `New ${type} request from ${staffName} (Reason: ${reason.slice(0, 30)}${reason.length > 30 ? '...' : ''})`,
+      type: 'leave',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    writeJson(notificationsFile, notifications);
+  } catch (err) {
+    console.error('Failed to create admin notification for leave request', err);
+  }
+
   res.json({ success: true, request: newRequest });
 });
 
@@ -646,6 +704,27 @@ app.post('/api/staff/tasks/status', requireStaff, (req, res) => {
   }
   
   writeJson(tasksFile, tasks);
+
+  // Notify admin
+  try {
+    const staffList = readJson(staffFile, []);
+    const staff = staffList.find(s => s.staffId === req.staffId) || {};
+    const staffName = staff.name || req.staffId;
+
+    const notifications = readJson(notificationsFile, []);
+    notifications.push({
+      id: 'NTF-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      staffId: 'admin',
+      message: `${staffName} updated task status for "${tasks[index].title}": ${status}.`,
+      type: 'task',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    writeJson(notificationsFile, notifications);
+  } catch (err) {
+    console.error('Failed to create admin notification for task status', err);
+  }
+
   res.json({ success: true, task: tasks[index] });
 });
 
@@ -675,6 +754,27 @@ app.post('/api/staff/tasks/progress', requireStaff, (req, res) => {
 
   tasks[index].progressUpdates.push(updateRecord);
   writeJson(tasksFile, tasks);
+
+  // Notify admin
+  try {
+    const staffList = readJson(staffFile, []);
+    const staff = staffList.find(s => s.staffId === req.staffId) || {};
+    const staffName = staff.name || req.staffId;
+
+    const notifications = readJson(notificationsFile, []);
+    notifications.push({
+      id: 'NTF-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      staffId: 'admin',
+      message: `${staffName} updated task progress for "${tasks[index].title}": ${progressPct}%.`,
+      type: 'task',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    writeJson(notificationsFile, notifications);
+  } catch (err) {
+    console.error('Failed to create admin notification for task progress', err);
+  }
+
   res.json({ success: true, task: tasks[index] });
 });
 
@@ -698,6 +798,35 @@ app.post('/api/staff/notifications/read', requireStaff, (req, res) => {
 });
 
 // ── Admin Endpoints ──
+// Admin notifications list
+app.get('/api/admin/notifications', requireAdmin, (req, res) => {
+  const list = readJson(notificationsFile, []);
+  const filtered = list.filter(n => n.staffId === 'admin');
+  res.json(filtered.reverse());
+});
+
+// Admin mark notification read
+app.post('/api/admin/notifications/read', requireAdmin, (req, res) => {
+  const { id } = req.body;
+  const list = readJson(notificationsFile, []);
+  const index = list.findIndex(n => n.id === id && n.staffId === 'admin');
+  if (index !== -1) {
+    list[index].read = true;
+    writeJson(notificationsFile, list);
+  }
+  res.json({ success: true });
+});
+
+// Admin mark all notifications read
+app.post('/api/admin/notifications/read-all', requireAdmin, (req, res) => {
+  const list = readJson(notificationsFile, []);
+  list.forEach(n => {
+    if (n.staffId === 'admin') n.read = true;
+  });
+  writeJson(notificationsFile, list);
+  res.json({ success: true });
+});
+
 app.post('/api/admin/login', (req, res) => {
   const { pin } = req.body;
   const correctPin = getAdminPin();
