@@ -605,79 +605,7 @@
     .sub-actions { grid-column: 1/-1; }
   }
 
-  /* ── Address Manager View Styles ── */
-  #viewAddressManager {
-    padding: 0;
-    flex-direction: column;
-    height: calc(100vh - 73px);
-  }
-  #viewAddressManager.active {
-    display: flex !important;
-  }
-  .address-control-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 24px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .address-control-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .address-title-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .address-subtitle-text {
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 1px;
-  }
-  .address-frame-wrap {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: var(--bg);
-  }
-  .address-loader {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--surface);
-    z-index: 10;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  .address-loader.hide {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(1.02);
-  }
-  .address-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-    background: transparent;
-  }
-  /* Fullscreen Mode */
-  #viewAddressManager.fullscreen-mode {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1000;
-    background: var(--bg);
-  }
+
 
   /* ── Staff Management Styles ── */
   .staff-grid {
@@ -879,9 +807,7 @@
       <button class="nav-item" id="navSettings" onclick="showView('settings')">
         <span class="nav-icon">⚙️</span> Settings
       </button>
-      <button class="nav-item" id="navAddressManager" onclick="showView('addressManager')">
-        <span class="nav-icon">📍</span> Address Manager
-      </button>
+
       <button class="nav-item" id="navNotifications" onclick="showView('notifications')">
         <span class="nav-icon">🔔</span> Notifications
         <span class="nav-badge" id="adminNotificationBadge" style="display: none;">0</span>
@@ -1080,30 +1006,7 @@
       </div>
     </div>
 
-    <!-- ── ADDRESS MANAGER VIEW ── -->
-    <div class="view" id="viewAddressManager">
-      <div class="address-control-bar">
-        <div class="address-control-title">
-          <span style="font-size: 20px;">📍</span>
-          <div>
-            <div class="address-title-text">Address Management System</div>
-            <div class="address-subtitle-text">Manage everything in the same platform</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn btn-ghost btn-sm" onclick="refreshAddressFrame()">🔄 Refresh</button>
-          <button class="btn btn-ghost btn-sm" id="fullscreenBtn" onclick="toggleAddressFullscreen()">🖥️ Fullscreen</button>
-          <a class="btn btn-purple btn-sm" href="https://address-management-5ggs.vercel.app/" target="_blank">↗️ Open Direct</a>
-        </div>
-      </div>
-      <div class="address-frame-wrap">
-        <div id="addressFrameLoader" class="address-loader">
-          <div class="spinner" style="margin: 20px auto;"></div>
-          <div style="font-size: 13px; color: var(--text2); font-weight: 500;">Loading address system...</div>
-        </div>
-        <iframe id="addressIframe" src="https://address-management-5ggs.vercel.app/" class="address-iframe" onload="onAddressFrameLoaded()"></iframe>
-      </div>
-    </div>
+
 
     <!-- ── NOTIFICATIONS VIEW ── -->
     <div class="view" id="viewNotifications">
@@ -1544,7 +1447,7 @@
     dashboard:      { title: 'Dashboard', subtitle: 'Overview of all submissions' },
     submissions:    { title: 'Submissions', subtitle: 'Manage and search all student records' },
     settings:       { title: 'Settings', subtitle: 'Configure integrations and security' },
-    addressManager: { title: 'Address Manager', subtitle: 'Manage address records and integration' },
+
     notifications:  { title: 'Notifications', subtitle: 'Official notices, submissions and check-in alerts' },
     staff:          { title: 'Staff Management', subtitle: 'Manage organization staff members, roles and details' },
     attendance:     { title: 'Attendance Monitor', subtitle: 'Monitor check-ins, timestamps and GPS locations' },
@@ -1576,33 +1479,7 @@
     }
   }
 
-  // ── Address Manager Frame Controls ──
-  function onAddressFrameLoaded() {
-    const loader = document.getElementById('addressFrameLoader');
-    if (loader) {
-      loader.classList.add('hide');
-    }
-  }
 
-  function refreshAddressFrame() {
-    const iframe = document.getElementById('addressIframe');
-    const loader = document.getElementById('addressFrameLoader');
-    if (iframe) {
-      if (loader) loader.classList.remove('hide');
-      iframe.src = iframe.src;
-    }
-  }
-
-  function toggleAddressFullscreen() {
-    const view = document.getElementById('viewAddressManager');
-    const btn = document.getElementById('fullscreenBtn');
-    if (view) {
-      const isFullscreen = view.classList.toggle('fullscreen-mode');
-      if (btn) {
-        btn.innerHTML = isFullscreen ? '📁 Exit Fullscreen' : '🖥️ Fullscreen';
-      }
-    }
-  }
 
   // ── Sidebar toggle (mobile) ──
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
