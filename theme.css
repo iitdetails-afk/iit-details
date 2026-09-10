@@ -3,43 +3,11 @@
    Themes: dark-navy (default), light, warm, royal
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Theme: Dark Navy (default) ── */
-[data-theme="dark-navy"], body:not([data-theme]) {
-  --theme-bg: #091322;
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #152844 0%, #091322 70%);
-  --theme-surface: rgba(15, 27, 46, 0.75);
-  --theme-surface-solid: #0d1b2e;
-  --theme-border: rgba(255, 255, 255, 0.12);
-  --theme-border-focus: #3b82f6;
-  --theme-text: #f8fafc;
-  --theme-text-secondary: #cbd5e1;
-  --theme-text-muted: #64748b;
-  --theme-accent: #3b82f6;
-  --theme-accent-hover: #2563eb;
-  --theme-accent-glow: rgba(59, 130, 246, 0.25);
-  --theme-gold: #f5c842;
-  --theme-gold-glow: rgba(245, 200, 66, 0.2);
-  --theme-topbar-bg: rgba(9, 19, 34, 0.85);
-  --theme-topbar-border: rgba(255, 255, 255, 0.08);
-  --theme-card-bg: rgba(15, 27, 46, 0.7);
-  --theme-card-border: rgba(255, 255, 255, 0.1);
-  --theme-card-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  --theme-ring-color: rgba(59, 130, 246, 0.15);
-  --theme-orb1: #3b82f6;
-  --theme-orb2: #8b5cf6;
-  --theme-orb3: #06b6d4;
-  --theme-btn-bg: #2563eb;
-  --theme-btn-text: #ffffff;
-  --theme-btn-hover: #1d4ed8;
-  --theme-backdrop-blur: blur(16px);
-  color-scheme: dark;
-}
-
-/* ── Theme: Light Elegance ── */
-[data-theme="light"] {
+/* ── Default Light Elegance Theme ── */
+[data-theme="light"], [data-theme="default"], body:not([data-theme]) {
   --theme-bg: #f4f7fb;
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #e2e8f0 100%);
-  --theme-surface: rgba(255, 255, 255, 0.85);
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef3f9 60%, #e2e8f0 100%);
+  --theme-surface: rgba(255, 255, 255, 0.92);
   --theme-surface-solid: #ffffff;
   --theme-border: rgba(15, 23, 42, 0.08);
   --theme-border-focus: #2563eb;
@@ -51,12 +19,12 @@
   --theme-accent-glow: rgba(37, 99, 235, 0.15);
   --theme-gold: #d97706;
   --theme-gold-glow: rgba(217, 119, 6, 0.15);
-  --theme-topbar-bg: rgba(255, 255, 255, 0.9);
+  --theme-topbar-bg: rgba(255, 255, 255, 0.92);
   --theme-topbar-border: rgba(15, 23, 42, 0.08);
-  --theme-card-bg: rgba(255, 255, 255, 0.9);
+  --theme-card-bg: rgba(255, 255, 255, 0.92);
   --theme-card-border: rgba(15, 23, 42, 0.08);
-  --theme-card-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
-  --theme-ring-color: rgba(37, 99, 235, 0.1);
+  --theme-card-shadow: 0 16px 40px rgba(15, 23, 42, 0.05);
+  --theme-ring-color: rgba(37, 99, 235, 0.08);
   --theme-orb1: #60a5fa;
   --theme-orb2: #a78bfa;
   --theme-orb3: #38bdf8;
@@ -65,6 +33,21 @@
   --theme-btn-hover: #1d4ed8;
   --theme-backdrop-blur: blur(16px);
   color-scheme: light;
+}
+
+/* Geometric Light Graphic Background Pattern Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.05) 0%, transparent 45%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* ── Theme: Warm Amber ── */
