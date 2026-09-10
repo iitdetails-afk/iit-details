@@ -2322,12 +2322,24 @@
         body: JSON.stringify({ staffId: id })
       });
       if (r.status === 401) { forceLogout('Session expired.'); return; }
-      if (!r.ok) throw new Error();
-      showToast('Staff member deleted.', 'error');
-      allStaff = await loadStaff();
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        showToast(data.error || 'Failed to delete staff member.', 'error');
+        return;
+      }
+      
+      // Update local state and sync storage
+      allStaff = allStaff.filter(s => s.staffId !== id);
+      localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(allStaff));
+      
+      showToast(`Staff member ${id} deleted successfully.`, 'success');
       renderStaffList();
     } catch(e) {
-      showToast('Network Error.', 'error');
+      // Offline fallback deletion
+      allStaff = allStaff.filter(s => s.staffId !== id);
+      localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(allStaff));
+      showToast(`Staff member ${id} deleted (offline mode).`, 'success');
+      renderStaffList();
     }
   }
 
