@@ -17,6 +17,7 @@ const attendanceFile = path.join(dataDir, 'attendance.json');
 const leavesFile = path.join(dataDir, 'leaves.json');
 const tasksFile = path.join(dataDir, 'tasks.json');
 const notificationsFile = path.join(dataDir, 'notifications.json');
+const addressesFile = path.join(dataDir, 'addresses.json');
 const backendPortFile = path.join(__dirname, '.backend-port');
 
 // ── Single admin session (in-memory) ──────────────────────────────────
@@ -121,6 +122,7 @@ function ensureDataFiles() {
   if (!fs.existsSync(leavesFile)) fs.writeFileSync(leavesFile, '[]', 'utf8');
   if (!fs.existsSync(tasksFile)) fs.writeFileSync(tasksFile, '[]', 'utf8');
   if (!fs.existsSync(notificationsFile)) fs.writeFileSync(notificationsFile, '[]', 'utf8');
+  if (!fs.existsSync(addressesFile)) fs.writeFileSync(addressesFile, '[]', 'utf8');
 }
 
 function readJson(filePath, fallback) {
@@ -947,6 +949,86 @@ app.get('/form.html', (req, res) => {
 app.get('/ss.html', (req, res) => {
   if (!sendIfFileExists(res, 'ss.html')) {
     res.status(404).send('Not found');
+  }
+});
+
+// ── Address Management API Endpoints ─────────────────────────────────
+app.get('/api/addresses', (req, res) => {
+  res.json({ success: true, addresses: readJson(addressesFile, []) });
+});
+
+app.post('/api/addresses', requireAdmin, (req, res) => {
+  const { title, name, contactPerson, phone, email, addressLine1, addressLine2, city, state, pincode, category, notes } = req.body;
+  if (!name || !city || !pincode) {
+    return res.status(400).json({ success: false, error: 'Name, City, and Pincode are required.' });
+  }
+
+  const addresses = readJson(addressesFile, []);
+  const newAddress = {
+    id: 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    title: title || name,
+    name: name.trim(),
+    contactPerson: (contactPerson || '').trim(),
+    phone: (phone || '').trim(),
+    email: (email || '').trim(),
+    addressLine1: (addressLine1 || '').trim(),
+    addressLine2: (addressLine2 || '').trim(),
+    city: (city || '').trim(),
+    state: (state || '').trim(),
+    pincode: (pincode || '').trim(),
+    category: category || 'General',
+    notes: (notes || '').trim(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  addresses.unshift(newAddress);
+  writeJson(addressesFile, addresses);
+  res.json({ success: true, address: newAddress });
+});
+
+app.put('/api/addresses/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const addresses = readJson(addressesFile, []);
+  const index = addresses.findIndex(a => a.id === id);
+  if (index === -1) {
+    return res.status(404).json({ success: false, error: 'Address record not found.' });
+  }
+
+  const existing = addresses[index];
+  const updated = {
+    ...existing,
+    ...req.body,
+    id: existing.id, // preserve ID
+    updatedAt: new Date().toISOString()
+  };
+
+  addresses[index] = updated;
+  writeJson(addressesFile, addresses);
+  res.json({ success: true, address: updated });
+});
+
+app.delete('/api/addresses/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  let addresses = readJson(addressesFile, []);
+  const initialLen = addresses.length;
+  addresses = addresses.filter(a => a.id !== id);
+
+  if (addresses.length === initialLen) {
+    return res.status(404).json({ success: false, error: 'Address record not found.' });
+  }
+
+  writeJson(addressesFile, addresses);
+  res.json({ success: true, id });
+});
+
+app.get('/address', (req, res) => {
+  res.redirect('/address.html');
+});
+
+app.get('/address.html', (req, res) => {
+  if (!sendIfFileExists(res, 'address.html')) {
+    res.status(404).send('Address Manager page not found');
   }
 });
 

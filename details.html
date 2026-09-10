@@ -7,30 +7,31 @@
 <link rel="stylesheet" href="theme.css">
 <style>
   :root{
-    --paper:#fcf8f0;
-    --ink:#213446;
-    --navy:#13263d;
-    --brass:#9a7634;
-    --rule:#d7cdb8;
-    --accent:#8b2234;
+    --paper: var(--theme-surface, #ffffff);
+    --ink: var(--theme-text, #0f172a);
+    --navy: var(--theme-bg, #091322);
+    --brass: var(--theme-accent, #3b82f6);
+    --rule: var(--theme-border, #e2e8f0);
+    --accent: var(--theme-accent-hover, #2563eb);
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     min-height:100vh;
-    background:linear-gradient(135deg,#efe3cb 0%,#e9dcc6 45%,#e6d8bc 100%);
-    font-family:'Georgia','Times New Roman',serif;
+    background: var(--theme-bg-gradient, linear-gradient(135deg, #091322 0%, #152844 100%));
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color:var(--ink);
     padding:24px 16px;
   }
   .wrap{
-    max-width:780px;
+    max-width:840px;
     margin:0 auto;
     background:var(--paper);
-    padding:24px 28px;
-    box-shadow:0 16px 40px rgba(19,38,61,.16);
-    border-radius:20px;
-    border:1px solid rgba(19,38,61,.08);
+    padding:32px;
+    box-shadow: var(--theme-card-shadow, 0 20px 50px rgba(0,0,0,0.2));
+    border-radius:24px;
+    border:1px solid var(--rule);
+    backdrop-filter: blur(16px);
   }
   .top-nav{
     display:flex;
