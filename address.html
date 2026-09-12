@@ -994,6 +994,7 @@
 
 <script>
   let historyRecords = [];
+  let editingRecordId = null;
 
   document.addEventListener('DOMContentLoaded', () => {
     loadSavedHistory();
@@ -1016,6 +1017,7 @@
     document.getElementById('toCity').value = '';
     document.getElementById('toState').value = '';
     document.getElementById('toCountry').value = 'India';
+    editingRecordId = null;
     showToast('To Address form reset.');
   }
 
@@ -1030,12 +1032,14 @@
     document.getElementById('fromCity').value = 'Namakkal';
     document.getElementById('fromState').value = 'Tamilnadu';
     document.getElementById('fromCountry').value = 'India';
+    editingRecordId = null;
     showToast('From Address form reset to default.');
   }
 
   function resetAllForms() {
     resetToForm();
     resetFromForm();
+    editingRecordId = null;
   }
 
   function submitAddressPair() {
@@ -1050,8 +1054,8 @@
       return;
     }
 
-    const newRecord = {
-      id: 'ADDR-' + String(historyRecords.length + 1).padStart(4, '0'),
+    const payload = {
+      id: editingRecordId ? editingRecordId : ('ADDR-' + String(historyRecords.length + 1).padStart(4, '0')),
       dateTime: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
       to: {
         name: toName,
@@ -1079,14 +1083,26 @@
       }
     };
 
-    historyRecords.unshift(newRecord);
+    if (editingRecordId) {
+      const idx = historyRecords.findIndex(r => r.id === editingRecordId);
+      if (idx !== -1) {
+        historyRecords[idx] = payload;
+      } else {
+        historyRecords.unshift(payload);
+      }
+      showToast(`Record ${editingRecordId} updated successfully!`);
+      editingRecordId = null;
+    } else {
+      historyRecords.unshift(payload);
+      showToast('Address record saved successfully!');
+    }
+
     saveHistoryToStorage();
     renderHistoryTable();
     updateMetrics();
-    showToast('Address record saved successfully!');
 
-    // Automatically trigger Print Preview with submitted data
-    populatePrintData(newRecord);
+    // Automatically trigger Print Preview with submitted/edited data
+    populatePrintData(payload);
     openPrintPreview();
   }
 
@@ -1180,17 +1196,55 @@
         </td>
         <td style="text-align: right;">
           <div class="table-actions" style="justify-content: flex-end;">
-            <button class="btn-icon-action" onclick="printHistoryRecord('${r.id}')">🖨️ Print</button>
-            <button class="btn-icon-action" onclick="deleteHistoryRecord('${r.id}')" style="color: #ef4444;">🗑️ Delete</button>
+            <button class="btn-icon-action" onclick="editHistoryRecord('${r.id}')" title="Edit Address Entry">✏️ Edit</button>
+            <button class="btn-icon-action" onclick="printHistoryRecord('${r.id}')" title="Print Shipping Label">🖨️ Print</button>
+            <button class="btn-icon-action" onclick="deleteHistoryRecord('${r.id}')" style="color: #ef4444;" title="Delete Record">🗑️ Delete</button>
           </div>
         </td>
       </tr>
     `).join('');
   }
 
+  function editHistoryRecord(id) {
+    const record = historyRecords.find(r => r.id === id);
+    if (!record) return;
+
+    // Set active editing record ID
+    editingRecordId = record.id;
+
+    // Populate TO form fields
+    document.getElementById('toName').value = record.to.name || '';
+    document.getElementById('toLine1').value = record.to.line1 || '';
+    document.getElementById('toLine2').value = record.to.line2 || '';
+    document.getElementById('toLine3').value = record.to.line3 || '';
+    document.getElementById('toPincode').value = record.to.pincode || '';
+    document.getElementById('toPhone').value = record.to.phone || '';
+    document.getElementById('toExtraPhone').value = record.to.extraPhone || '';
+    document.getElementById('toCity').value = record.to.city || '';
+    document.getElementById('toState').value = record.to.state || '';
+    document.getElementById('toCountry').value = record.to.country || 'India';
+
+    // Populate FROM form fields
+    document.getElementById('fromName').value = record.from.name || '';
+    document.getElementById('fromLine1').value = record.from.line1 || '';
+    document.getElementById('fromLine2').value = record.from.line2 || '';
+    document.getElementById('fromLine3').value = record.from.line3 || '';
+    document.getElementById('fromPincode').value = record.from.pincode || '';
+    document.getElementById('fromPhone').value = record.from.phone || '';
+    document.getElementById('fromExtraPhone').value = record.from.extraPhone || '';
+    document.getElementById('fromCity').value = record.from.city || '';
+    document.getElementById('fromState').value = record.from.state || '';
+    document.getElementById('fromCountry').value = record.from.country || 'India';
+
+    // Scroll smoothly to form section
+    document.querySelector('.forms-grid').scrollIntoView({ behavior: 'smooth' });
+    showToast(`Loaded ${record.id} for editing. Modify fields and click Submit to update.`);
+  }
+
   function deleteHistoryRecord(id) {
     if (!confirm('Are you sure you want to delete this record?')) return;
     historyRecords = historyRecords.filter(r => r.id !== id);
+    if (editingRecordId === id) editingRecordId = null;
     saveHistoryToStorage();
     renderHistoryTable();
     updateMetrics();
