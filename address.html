@@ -1055,7 +1055,7 @@
     }
 
     const payload = {
-      id: editingRecordId ? editingRecordId : ('ADDR-' + String(historyRecords.length + 1).padStart(4, '0')),
+      id: editingRecordId ? editingRecordId : ('ADDR-' + String(Date.now()).slice(-4) + '-' + String(Math.floor(100 + Math.random() * 900))),
       dateTime: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
       to: {
         name: toName,
@@ -1094,7 +1094,7 @@
       editingRecordId = null;
     } else {
       historyRecords.unshift(payload);
-      showToast('Address record saved successfully!');
+      showToast(`Address record (${payload.id}) saved to history!`);
     }
 
     saveHistoryToStorage();
