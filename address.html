@@ -1101,9 +1101,8 @@
     renderHistoryTable();
     updateMetrics();
 
-    // Automatically trigger Print Preview with submitted/edited data
-    populatePrintData(payload);
-    openPrintPreview();
+    // Scroll down smoothly to History section to show saved record
+    document.querySelector('.history-section').scrollIntoView({ behavior: 'smooth' });
   }
 
   function loadSavedHistory() {
