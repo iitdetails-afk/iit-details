@@ -1275,14 +1275,30 @@
   }
 
   function openPrintPreview() {
-    // If opening manually from current inputs
-    if (!document.getElementById('printToName').textContent) {
-      const currentToName = document.getElementById('toName').value || 'Mohammed irfan T';
-      document.getElementById('printToName').textContent = currentToName;
-      document.getElementById('printToAddress').innerHTML = `${document.getElementById('toLine1').value || 'No 27 veera anjaneyar street Mangadu'}<br>${document.getElementById('toCity').value || 'Chennai'}, ${document.getElementById('toState').value || 'Tamilnadu'}`;
-      document.getElementById('printToPin').textContent = `PIN: ${document.getElementById('toPincode').value || '600122'}`;
-      document.getElementById('printToCountry').textContent = document.getElementById('toCountry').value || 'India';
-      document.getElementById('printToPhone').textContent = `Phone: ${document.getElementById('toPhone').value || '9363635355'}`;
+    const toName = document.getElementById('toName').value.trim();
+    const toLine1 = document.getElementById('toLine1').value.trim();
+    const toCity = document.getElementById('toCity').value.trim();
+    const toState = document.getElementById('toState').value.trim();
+    const toPincode = document.getElementById('toPincode').value.trim();
+    const toPhone = document.getElementById('toPhone').value.trim();
+    const toExtraPhone = document.getElementById('toExtraPhone').value.trim();
+    const toCountry = document.getElementById('toCountry').value.trim();
+
+    if (toName || toLine1) {
+      document.getElementById('printToName').textContent = toName || 'Mohammed irfan T';
+      document.getElementById('printToAddress').innerHTML = `${escapeHtml(toLine1 || 'No 27 veera anjaneyar street Mangadu')}<br>${escapeHtml(toCity || 'Chennai')}, ${escapeHtml(toState || 'Tamilnadu')}`;
+      document.getElementById('printToPin').textContent = `PIN: ${toPincode || '600122'}`;
+      document.getElementById('printToCountry').textContent = toCountry || 'India';
+      
+      let phoneStr = `Phone: ${toPhone || '9363635355'}`;
+      if (toExtraPhone) phoneStr += ` / ${toExtraPhone}`;
+      document.getElementById('printToPhone').textContent = phoneStr;
+
+      document.getElementById('printFromName').textContent = document.getElementById('fromName').value.trim() || 'Indian Info Tech';
+      document.getElementById('printFromAddress').innerHTML = `${escapeHtml(document.getElementById('fromLine1').value.trim() || '101-C, KM Complex,')}<br>${escapeHtml(document.getElementById('fromLine2').value.trim() || 'Amma Unavagam Back Side,')}<br>${escapeHtml(document.getElementById('fromCity').value.trim() || 'Namakkal')}, ${escapeHtml(document.getElementById('fromState').value.trim() || 'Tamilnadu')}`;
+      document.getElementById('printFromPin').textContent = `PIN: ${document.getElementById('fromPincode').value.trim() || '637001'}`;
+      document.getElementById('printFromCountry').textContent = document.getElementById('fromCountry').value.trim() || 'India';
+      document.getElementById('printFromPhone').textContent = `Phone: ${document.getElementById('fromPhone').value.trim() || '9003446612'}`;
     }
 
     applyPrintStyles();
